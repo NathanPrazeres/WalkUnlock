@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.gmail.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
+import com.gmail.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
 import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
 import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
 
@@ -37,7 +38,6 @@ class MainActivity : ComponentActivity() {
             ) == PackageManager.PERMISSION_GRANTED -> {
                 startStepCounter()
             }
-
             else -> {
                 requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
             }
