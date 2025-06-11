@@ -21,10 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
 import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
@@ -37,14 +38,14 @@ fun WalkUnlockHomeScreen(
     stepCounterManager: StepCounterManager,
     lockedAppManager: LockedAppManager
 ) {
-    val totalStepsState = stepCounterManager.totalSteps.collectAsState()
-//    val redeemedSteps = stepCounterManager.redeemedSteps.collectAsState()
-    val availableStepsState = stepCounterManager.availableSteps.collectAsState()
+    LocalContext.current
 
+    val totalStepsState by stepCounterManager.totalSteps.collectAsState()
+//    val redeemedStepsState by stepCounterManager.redeemedSteps.collectAsState()
+    val availableStepsState by stepCounterManager.availableSteps.collectAsState()
     val lockedAppsState by lockedAppManager.lockedAppsFlow.collectAsState(initial = emptyList())
 
-    var showAddDialog by remember { mutableStateOf(false) }
-
+    var showAddScreen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -59,7 +60,7 @@ fun WalkUnlockHomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
+            FloatingActionButton(onClick = { showAddScreen = true }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -72,17 +73,22 @@ fun WalkUnlockHomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StepCard(availableSteps = availableStepsState.value, totalSteps = totalStepsState.value)
+            StepCard(availableSteps = availableStepsState, totalSteps = totalStepsState)
 
             Text("Locked Apps", style = MaterialTheme.typography.titleMedium)
 
             lockedAppsState.forEach { app ->
                 LockedAppCard(
                     app = app,
-                    availableSteps = availableStepsState.value,
+                    availableSteps = availableStepsState,
                     onRemove = {
                         coroutineScope.launch {
-                            lockedAppManager.removeLockedApp(app.packageName)
+                            try {
+                                lockedAppManager.removeLockedApp(app.packageName)
+                            } catch (_: Exception) {
+                                // This should be unreachable since errors are handled inside .removeLockedApp
+                                // TODO: make sure that there's no way for app.packageName to fail
+                            }
                         }
                     }
                 )
@@ -90,14 +96,19 @@ fun WalkUnlockHomeScreen(
         }
     }
 
-    if (showAddDialog) {
+    if (showAddScreen) {
         AddLockedAppScreen(
-            onBackClick = { showAddDialog = false },
+            onBackClick = { showAddScreen = false },
             onAppSelected = { selectedApp ->
                 coroutineScope.launch {
-                    lockedAppManager.addLockedApp(selectedApp)
+                    try {
+                        lockedAppManager.addLockedApp(selectedApp)
+                        showAddScreen = false
+                    } catch (_: Exception) {
+                        // This should be unreachable since I handle errors inside .addLockedApp
+                        showAddScreen = false
+                    }
                 }
-                showAddDialog = false
             }
         )
     }

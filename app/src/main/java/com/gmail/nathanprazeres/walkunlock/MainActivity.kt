@@ -13,6 +13,7 @@ import com.gmail.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
 import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
 import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
 
+
 class MainActivity : ComponentActivity() {
     private lateinit var stepCounterManager: StepCounterManager
     private lateinit var lockedAppManager: LockedAppManager
@@ -37,12 +38,8 @@ class MainActivity : ComponentActivity() {
         when {
             ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACTIVITY_RECOGNITION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                startStepCounter()
-            }
-            else -> {
-                requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-            }
+            ) == PackageManager.PERMISSION_GRANTED -> startStepCounter()
+            else -> requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
         }
 
         setContent {
