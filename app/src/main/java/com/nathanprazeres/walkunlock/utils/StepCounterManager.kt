@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.utils
+package com.nathanprazeres.walkunlock.utils
 
 import android.content.Context
 import android.hardware.Sensor

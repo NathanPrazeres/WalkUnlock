@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock
+package com.nathanprazeres.walkunlock
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.ui.theme
+package com.nathanprazeres.walkunlock.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.ui
+package com.nathanprazeres.walkunlock.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,8 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
-import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
+import com.nathanprazeres.walkunlock.utils.LockedAppManager
+import com.nathanprazeres.walkunlock.utils.StepCounterManager
 import kotlinx.coroutines.launch
 
 

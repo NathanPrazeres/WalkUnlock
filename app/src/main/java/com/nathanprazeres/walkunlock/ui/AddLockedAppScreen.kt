@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.ui
+package com.nathanprazeres.walkunlock.ui
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -50,8 +50,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.gmail.nathanprazeres.walkunlock.models.LockedApp
-import com.gmail.nathanprazeres.walkunlock.utils.InstalledApps
+import com.nathanprazeres.walkunlock.models.LockedApp
+import com.nathanprazeres.walkunlock.utils.InstalledApps
 import kotlinx.coroutines.launch
 
 

@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.ui
+package com.nathanprazeres.walkunlock.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth

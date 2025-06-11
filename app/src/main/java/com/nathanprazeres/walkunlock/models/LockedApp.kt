@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.models
+package com.nathanprazeres.walkunlock.models
 
 import android.graphics.Bitmap
 import android.os.Parcelable

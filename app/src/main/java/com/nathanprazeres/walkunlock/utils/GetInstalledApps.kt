@@ -1,10 +1,10 @@
-package com.gmail.nathanprazeres.walkunlock.utils
+package com.nathanprazeres.walkunlock.utils
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import androidx.core.graphics.drawable.toBitmap
-import com.gmail.nathanprazeres.walkunlock.models.LockedApp
+import com.nathanprazeres.walkunlock.models.LockedApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

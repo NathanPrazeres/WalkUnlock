@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock
+package com.nathanprazeres.walkunlock
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -8,10 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.gmail.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
-import com.gmail.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
-import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
-import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
+import com.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
+import com.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
+import com.nathanprazeres.walkunlock.utils.LockedAppManager
+import com.nathanprazeres.walkunlock.utils.StepCounterManager
 
 
 class MainActivity : ComponentActivity() {
@@ -39,6 +39,7 @@ class MainActivity : ComponentActivity() {
             ContextCompat.checkSelfPermission(
                 this, Manifest.permission.ACTIVITY_RECOGNITION
             ) == PackageManager.PERMISSION_GRANTED -> startStepCounter()
+
             else -> requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
         }
 

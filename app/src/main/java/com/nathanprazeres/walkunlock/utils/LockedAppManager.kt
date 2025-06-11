@@ -1,4 +1,4 @@
-package com.gmail.nathanprazeres.walkunlock.utils
+package com.nathanprazeres.walkunlock.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,12 +9,13 @@ import android.widget.Toast
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.gmail.nathanprazeres.walkunlock.models.LockedApp
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import com.nathanprazeres.walkunlock.models.LockedApp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -42,7 +43,7 @@ class BitmapTypeAdapter : TypeAdapter<Bitmap>() {
     }
 
     override fun read(reader: JsonReader): Bitmap? {
-        if (reader.peek() == com.google.gson.stream.JsonToken.NULL) {
+        if (reader.peek() == JsonToken.NULL) {
             reader.nextNull()
             return null
         }
