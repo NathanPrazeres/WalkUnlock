@@ -1,47 +1,62 @@
 package com.gmail.nathanprazeres.walkunlock
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.gmail.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.gmail.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
+import com.gmail.nathanprazeres.walkunlock.utils.LockedAppManager
+import com.gmail.nathanprazeres.walkunlock.utils.StepCounterManager
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            WalkUnlockTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+    private lateinit var stepCounterManager: StepCounterManager
+    private lateinit var lockedAppManager: LockedAppManager
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            startStepCounter()
+        } else {
+            // TODO: Handle permission denial
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WalkUnlockTheme {
-        Greeting("Android")
+        stepCounterManager = StepCounterManager(this)
+        lockedAppManager = LockedAppManager(this)
+
+        when {
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.ACTIVITY_RECOGNITION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                startStepCounter()
+            }
+
+            else -> {
+                requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+        }
+
+        setContent {
+            WalkUnlockHomeScreen(
+                stepCounterManager = stepCounterManager,
+                lockedAppManager = lockedAppManager
+            )
+        }
+    }
+
+    private fun startStepCounter() {
+        stepCounterManager.startListening()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stepCounterManager.stopListening()
     }
 }
