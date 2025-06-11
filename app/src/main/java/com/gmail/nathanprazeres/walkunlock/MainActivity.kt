@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
             startStepCounter()
         } else {
             // TODO: Handle permission denial
-            Toast.makeText(baseContext, "Step counter permission denied", Toast.LENGTH_SHORT)
+            Toast.makeText(baseContext, "Step counter permission denied", Toast.LENGTH_SHORT).show()
         }
     }
 
