@@ -3,6 +3,7 @@ package com.gmail.nathanprazeres.walkunlock
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,7 @@ class MainActivity : ComponentActivity() {
             startStepCounter()
         } else {
             // TODO: Handle permission denial
+            Toast.makeText(baseContext, "Step counter permission denied", Toast.LENGTH_SHORT)
         }
     }
 
