@@ -44,10 +44,12 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            WalkUnlockHomeScreen(
-                stepCounterManager = stepCounterManager,
-                lockedAppManager = lockedAppManager
-            )
+            WalkUnlockTheme {
+                WalkUnlockHomeScreen(
+                    stepCounterManager = stepCounterManager,
+                    lockedAppManager = lockedAppManager
+                )
+            }
         }
     }
 
