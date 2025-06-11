@@ -12,6 +12,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -34,7 +35,7 @@ class BitmapTypeAdapter : TypeAdapter<Bitmap>() {
     }
 
     override fun read(reader: JsonReader): Bitmap? {
-        if (reader.peek() == com.google.gson.stream.JsonToken.NULL) {
+        if (reader.peek() == JsonToken.NULL) {
             reader.nextNull()
             return null
         }
@@ -59,7 +60,7 @@ class LockedAppManager(private val context: Context) {
                 try {
                     val type = object : TypeToken<List<LockedApp>>() {}.type
                     gson.fromJson(json, type)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // If deserialization fails, return empty list and clear corrupted data
                     emptyList()
                 }
