@@ -1,8 +1,5 @@
 package com.gmail.nathanprazeres.walkunlock.ui
 
-import android.content.Context
-import android.content.Intent
-import android.content.pm.ResolveInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,8 +47,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.drawable.toBitmap
 import com.gmail.nathanprazeres.walkunlock.models.LockedApp
+import com.gmail.nathanprazeres.walkunlock.utils.InstalledApps
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,9 +65,17 @@ fun AddLockedAppScreen(
     var costPerMinute by remember { mutableStateOf("10") }
     var searchQuery by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        apps = getInstalledApps(context)
+    val coroutineScope = rememberCoroutineScope()
+
+    // Function to load/refresh installed apps list
+    suspend fun loadApps(refresh: Boolean = false) {
+        isLoading = true
+        apps = InstalledApps.getApps(context, refresh)
         isLoading = false
+    }
+
+    LaunchedEffect(Unit) {
+        loadApps()
     }
 
     Scaffold(
@@ -80,6 +88,17 @@ fun AddLockedAppScreen(
                     }
                 },
                 actions = {
+                    // Refresh button
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                loadApps(refresh = true)
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh apps")
+                    }
+
                     if (selectedApp != null && costPerMinute.isNotEmpty()) {
                         IconButton(
                             onClick = {
@@ -252,32 +271,4 @@ fun AddLockedAppScreen(
             }
         }
     }
-}
-
-fun getInstalledApps(context: Context): List<LockedApp> {
-    val mainIntent = Intent(Intent.ACTION_MAIN, null)
-    mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-
-    val packageManager = context.packageManager
-    val pkgAppsList: List<ResolveInfo> = packageManager.queryIntentActivities(mainIntent, 0)
-
-    return pkgAppsList
-        .mapNotNull { appInfo ->
-            try {
-                val appName = appInfo.loadLabel(packageManager).toString()
-                val packageName = appInfo.activityInfo.packageName
-                val icon = appInfo.loadIcon(packageManager).toBitmap()
-
-                LockedApp(
-                    appName = appName,
-                    packageName = packageName,
-                    costPerMinute = 0,
-                    icon = icon
-                )
-            } catch (_: Exception) {
-                null
-            }
-        }
-        .distinctBy { it.packageName } // Remove duplicates
-        .sortedBy { it.appName.lowercase() }
 }
