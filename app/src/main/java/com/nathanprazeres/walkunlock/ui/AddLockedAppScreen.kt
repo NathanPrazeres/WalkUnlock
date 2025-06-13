@@ -266,7 +266,24 @@ fun AddLockedAppScreen(
                     // Steps per minute input
                     OutlinedTextField(
                         value = costPerMinute,
-                        onValueChange = { costPerMinute = it.filter { c -> c.isDigit() } },
+                        onValueChange = {
+                            costPerMinute = it
+                                .filter { c -> c.isDigit() }
+                                .let { filtered ->
+                                    if (filtered.isNotEmpty()) {
+                                        try {
+                                            val longValue = filtered.toLong()
+                                            if (longValue < Int.MAX_VALUE) filtered
+                                            else costPerMinute
+                                        } catch (_: NumberFormatException) {
+                                            // If number is too big for a long (if the user pastes)
+                                            costPerMinute
+                                        }
+                                    } else {
+                                        filtered
+                                    }
+                                }
+                        },
                         label = { Text("Steps per minute") },
                         supportingText = { Text("Number of steps required per minute of usage") },
                         modifier = Modifier.fillMaxWidth()

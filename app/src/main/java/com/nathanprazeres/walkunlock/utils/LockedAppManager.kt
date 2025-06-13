@@ -52,7 +52,7 @@ class BitmapTypeAdapter : TypeAdapter<Bitmap>() {
             val base64String = reader.nextString()
             val byteArray = Base64.decode(base64String, Base64.DEFAULT)
             BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

@@ -77,7 +77,7 @@ class StepCounterManager(private val context: Context) : SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // no need to implement this as I always want the most generous accuracy
+        // No need to implement this as I always want the most generous accuracy
     }
 
     fun redeemSteps(amount: Int) {
