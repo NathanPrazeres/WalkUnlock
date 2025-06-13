@@ -270,17 +270,10 @@ fun AddLockedAppScreen(
                             costPerMinute = it
                                 .filter { c -> c.isDigit() }
                                 .let { filtered ->
-                                    if (filtered.isNotEmpty()) {
-                                        try {
-                                            val longValue = filtered.toLong()
-                                            if (longValue < Int.MAX_VALUE) filtered
-                                            else costPerMinute
-                                        } catch (_: NumberFormatException) {
-                                            // If number is too big for a long (if the user pastes)
-                                            costPerMinute
-                                        }
-                                    } else {
-                                        filtered
+                                    when {
+                                        filtered.isEmpty() -> ""
+                                        filtered.toIntOrNull() != null -> filtered
+                                        else -> costPerMinute
                                     }
                                 }
                         },
