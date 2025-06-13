@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.gmail.nathanprazeres.walkunlock"
+    namespace = "com.nathanprazeres.walkunlock"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.gmail.nathanprazeres.walkunlock"
+        applicationId = "com.nathanprazeres.walkunlock"
         minSdk = 33
         targetSdk = 35
         versionCode = 1

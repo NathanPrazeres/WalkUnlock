@@ -1,95 +1,88 @@
 package com.nathanprazeres.walkunlock.utils
 
+import android.content.ComponentName
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.util.Log
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.IBinder
+import com.nathanprazeres.walkunlock.services.StepCounterService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-private val Context.dataStore by preferencesDataStore(name = "step_prefs")
 
-class StepCounterManager(private val context: Context) : SensorEventListener {
-
-    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-
-    private val totalStepsKey = intPreferencesKey("total_steps")
-    private val redeemedStepsKey = intPreferencesKey("redeemed_steps")
-
+class StepCounterManager(private val context: Context) {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
-    private val totalStepsFlow = context.dataStore.data.map { it[totalStepsKey] ?: 0 }
-    private val redeemedStepsFlow = context.dataStore.data.map { it[redeemedStepsKey] ?: 0 }
+    private var stepCounterService: StepCounterService? = null
+    private var isServiceBound = false
 
     val totalSteps = MutableStateFlow(0)
     val redeemedSteps = MutableStateFlow(0)
     val availableSteps = MutableStateFlow(0)
 
-    init {
-        coroutineScope.launch {
-            totalStepsFlow.collect { steps ->
-                totalSteps.value = steps
-                updateAvailableSteps()
-            }
-        }
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            val binder = service as StepCounterService.LocalBinder
+            stepCounterService = binder.getService()
+            isServiceBound = true
 
-        coroutineScope.launch {
-            redeemedStepsFlow.collect { steps ->
-                redeemedSteps.value = steps
-                updateAvailableSteps()
-            }
-        }
-    }
+            // Synchronize step counter with service
+            stepCounterService?.let { serviceInstance ->
+                coroutineScope.launch {
+                    serviceInstance.totalSteps.collect {
+                        totalSteps.value = it
+                    }
+                }
 
-    fun startListening() {
-        // TODO: remove logs (they are for debug purposes only)
-        Log.d("StepSensor", "Available sensors: ${sensorManager.getSensorList(Sensor.TYPE_ALL)}")
-        Log.d("StepSensor", "Step detector sensor available: ${stepSensor != null}")
+                coroutineScope.launch {
+                    serviceInstance.redeemedSteps.collect {
+                        redeemedSteps.value = it
+                    }
+                }
 
-        stepSensor?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-        }
-    }
-
-    fun stopListening() {
-        sensorManager.unregisterListener(this)
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
-            val steps = event.values[0].toInt()
-            coroutineScope.launch {
-                context.dataStore.edit { preferences ->
-                    val currentTotal = preferences[totalStepsKey] ?: 0
-                    preferences[totalStepsKey] = currentTotal + steps
+                coroutineScope.launch {
+                    serviceInstance.availableSteps.collect {
+                        availableSteps.value = it
+                    }
                 }
             }
         }
-    }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No need to implement this as I always want the most generous accuracy
-    }
-
-    fun redeemSteps(amount: Int) {
-        coroutineScope.launch {
-            context.dataStore.edit { preferences ->
-                val currentRedeemed = preferences[redeemedStepsKey] ?: 0
-                preferences[redeemedStepsKey] = currentRedeemed + amount
-            }
+        override fun onServiceDisconnected(name: ComponentName?) {
+            stepCounterService = null
+            isServiceBound = false
         }
     }
 
-    private fun updateAvailableSteps() {
-        availableSteps.value = (totalSteps.value - redeemedSteps.value).coerceAtLeast(0)
+    fun startService() {
+        val intent = Intent(context, StepCounterService::class.java).apply {
+            action = StepCounterService.ACTION_START_SERVICE
+        }
+        context.startForegroundService(intent)
+
+        val bindIntent = Intent(context, StepCounterService::class.java)
+        context.bindService(bindIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    fun stopService() {
+        unbindService()
+
+        val intent = Intent(context, StepCounterService::class.java).apply {
+            action = StepCounterService.ACTION_STOP_SERVICE
+        }
+        context.startService(intent)
+    }
+
+    fun unbindService() {
+        if (isServiceBound) {
+            context.unbindService(serviceConnection)
+            isServiceBound = false
+        }
+    }
+
+    fun redeemSteps(amount: Int) {
+        stepCounterService?.redeemSteps(amount)
     }
 }

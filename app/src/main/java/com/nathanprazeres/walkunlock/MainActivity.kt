@@ -2,6 +2,7 @@ package com.nathanprazeres.walkunlock
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -18,14 +19,46 @@ class MainActivity : ComponentActivity() {
     private lateinit var stepCounterManager: StepCounterManager
     private lateinit var lockedAppManager: LockedAppManager
 
+    private val requiredPermissions = mutableSetOf<String>().apply {
+        add(Manifest.permission.ACTIVITY_RECOGNITION)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val activityRecognitionGranted =
+            permissions[Manifest.permission.ACTIVITY_RECOGNITION] == true
+        val postNotificationGranted =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) permissions[Manifest.permission.POST_NOTIFICATIONS] == true
+            else true
+
+        if (activityRecognitionGranted && postNotificationGranted) {
             startStepCounter()
+            // TODO: ask/check for battery optimization override permission
         } else {
-            // TODO: Handle permission denial
-            Toast.makeText(this, "Step counter permission denied", Toast.LENGTH_SHORT).show()
+            val deniedPermissions = permissions.filter { !it.value }.keys
+            Toast.makeText(
+                this,
+                "Required permissions denied: ${deniedPermissions.joinToString()}",
+                Toast.LENGTH_LONG
+            ).show()
+            // TODO: maybe request permissions again?
+        }
+    }
+
+    private fun requestPermissions() {
+        val permissionsToRequest = requiredPermissions.filter { permission ->
+            ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (permissionsToRequest.isEmpty()) {
+            startStepCounter()
+            // TODO: ask/check for battery optimization override permission
+        } else {
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
 
@@ -35,30 +68,23 @@ class MainActivity : ComponentActivity() {
         stepCounterManager = StepCounterManager(this)
         lockedAppManager = LockedAppManager(this)
 
-        when {
-            ContextCompat.checkSelfPermission(
-                this, Manifest.permission.ACTIVITY_RECOGNITION
-            ) == PackageManager.PERMISSION_GRANTED -> startStepCounter()
-
-            else -> requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-        }
+        requestPermissions()
 
         setContent {
             WalkUnlockTheme {
                 WalkUnlockHomeScreen(
-                    stepCounterManager = stepCounterManager,
-                    lockedAppManager = lockedAppManager
+                    stepCounterManager = stepCounterManager, lockedAppManager = lockedAppManager
                 )
             }
         }
     }
 
     private fun startStepCounter() {
-        stepCounterManager.startListening()
+        stepCounterManager.startService()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        stepCounterManager.stopListening()
+        stepCounterManager.unbindService()
     }
 }

@@ -25,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.utils.LockedAppManager
 import com.nathanprazeres.walkunlock.utils.StepCounterManager
@@ -35,11 +34,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WalkUnlockHomeScreen(
-    stepCounterManager: StepCounterManager,
-    lockedAppManager: LockedAppManager
+    stepCounterManager: StepCounterManager, lockedAppManager: LockedAppManager
 ) {
-    LocalContext.current
-
     val totalStepsState by stepCounterManager.totalSteps.collectAsState()
 //    val redeemedStepsState by stepCounterManager.redeemedSteps.collectAsState()
     val availableStepsState by stepCounterManager.availableSteps.collectAsState()
@@ -48,23 +44,17 @@ fun WalkUnlockHomeScreen(
     var showAddScreen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("WalkUnlock") },
-                actions = {
-                    IconButton(onClick = { /* TODO: navigate to settings */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showAddScreen = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("WalkUnlock") }, actions = {
+            IconButton(onClick = { /* TODO: navigate to settings */ }) {
+                Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
+        })
+    }, floatingActionButton = {
+        FloatingActionButton(onClick = { showAddScreen = true }) {
+            Icon(Icons.Default.Add, contentDescription = "Add")
         }
-    ) { padding ->
+    }) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -79,9 +69,7 @@ fun WalkUnlockHomeScreen(
 
             lockedAppsState.forEach { app ->
                 LockedAppCard(
-                    app = app,
-                    availableSteps = availableStepsState,
-                    onRemove = {
+                    app = app, availableSteps = availableStepsState, onRemove = {
                         coroutineScope.launch {
                             try {
                                 lockedAppManager.removeLockedApp(app.packageName)
@@ -90,26 +78,22 @@ fun WalkUnlockHomeScreen(
                                 // TODO: make sure that there's no way for app.packageName to fail
                             }
                         }
-                    }
-                )
+                    })
             }
         }
     }
 
     if (showAddScreen) {
-        AddLockedAppScreen(
-            onBackClick = { showAddScreen = false },
-            onAppSelected = { selectedApp ->
-                coroutineScope.launch {
-                    try {
-                        lockedAppManager.addLockedApp(selectedApp)
-                        showAddScreen = false
-                    } catch (_: Exception) {
-                        // This should be unreachable since I handle errors inside .addLockedApp
-                        showAddScreen = false
-                    }
+        AddLockedAppScreen(onBackClick = { showAddScreen = false }, onAppSelected = { selectedApp ->
+            coroutineScope.launch {
+                try {
+                    lockedAppManager.addLockedApp(selectedApp)
+                    showAddScreen = false
+                } catch (_: Exception) {
+                    // This should be unreachable since I handle errors inside .addLockedApp
+                    showAddScreen = false
                 }
             }
-        )
+        })
     }
 }
