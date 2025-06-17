@@ -31,8 +31,8 @@ import kotlinx.coroutines.launch
 
 private val Context.dataStore by preferencesDataStore(name = "step_prefs")
 
-class StepCounterService() : Service(), SensorEventListener {
-    // I just found out this is the "right" way of declaring constants in a class
+class WalkUnlockService() : Service(), SensorEventListener {
+
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "step_counter_channel"
@@ -55,7 +55,7 @@ class StepCounterService() : Service(), SensorEventListener {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     inner class LocalBinder : Binder() {
-        fun getService(): StepCounterService = this@StepCounterService
+        fun getService(): WalkUnlockService = this@WalkUnlockService
     }
 
     override fun onBind(intent: Intent?): IBinder = binder
@@ -188,7 +188,7 @@ class StepCounterService() : Service(), SensorEventListener {
         loadStoredSteps()
 
         // TODO: remove debug logs
-        Log.d("StepCounterService", "Service created")
+        Log.d("WalkUnlockService", "Service created")
     }
 
     override fun onDestroy() {
@@ -198,7 +198,7 @@ class StepCounterService() : Service(), SensorEventListener {
         serviceScope.launch { } // This should cancel all running coroutines
 
         // TODO: remove debug logs
-        Log.d("StepCounterService", "Service destroyed")
+        Log.d("WalkUnlockService", "Service destroyed")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
