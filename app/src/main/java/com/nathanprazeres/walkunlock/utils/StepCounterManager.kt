@@ -62,6 +62,10 @@ class StepCounterManager(private val context: Context) {
         }
         context.startForegroundService(intent)
 
+        bindService()
+    }
+
+    fun bindService() {
         val bindIntent = Intent(context, StepCounterService::class.java)
         context.bindService(bindIntent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
