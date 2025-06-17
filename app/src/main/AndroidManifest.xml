@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name="com.nathanprazeres.walkunlock.services.StepCounterService"
+            android:name="com.nathanprazeres.walkunlock.services.WalkUnlockService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="health" />
