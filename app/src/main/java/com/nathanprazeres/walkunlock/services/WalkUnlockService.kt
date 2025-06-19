@@ -21,6 +21,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.nathanprazeres.walkunlock.MainActivity
 import com.nathanprazeres.walkunlock.R
+import com.nathanprazeres.walkunlock.utils.AppLockManager
+import com.nathanprazeres.walkunlock.utils.LockedAppManager
+import com.nathanprazeres.walkunlock.utils.StepCounterManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -53,6 +56,9 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
     private val binder = LocalBinder()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private lateinit var appLockManager: AppLockManager
+    private lateinit var lockedAppManager: LockedAppManager
 
     inner class LocalBinder : Binder() {
         fun getService(): WalkUnlockService = this@WalkUnlockService
@@ -151,9 +157,28 @@ class WalkUnlockService() : Service(), SensorEventListener {
                 val updatedRedeemed = currentRedeemed + amount
                 preferences[redeemedStepsKey] = updatedRedeemed
                 redeemedSteps.value = updatedRedeemed
-                updateAvailableSteps()
             }
         }
+
+        updateAvailableSteps()
+    }
+
+    // TODO: remove this (only for testing with emulator)
+    fun addSteps(amount: Int) {
+        serviceScope.launch {
+            dataStore.edit { preferences ->
+                val currentTotal = preferences[totalStepsKey] ?: 0
+                val updatedTotal = currentTotal + amount
+                preferences[totalStepsKey] = updatedTotal
+                totalSteps.value = updatedTotal
+            }
+        }
+
+        updateAvailableSteps()
+        Log.d(
+            "WalkUnlockService",
+            "Steps added. Current values: Available: ${availableSteps.value}, Redeemed: ${redeemedSteps.value}, Total: ${totalSteps.value}"
+        )
     }
 
     // SENSOR MANAGEMENT
@@ -183,6 +208,8 @@ class WalkUnlockService() : Service(), SensorEventListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
         notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        lockedAppManager = LockedAppManager(this)
 
         createNotificationChannel()
         loadStoredSteps()
@@ -227,4 +254,15 @@ class WalkUnlockService() : Service(), SensorEventListener {
         // (Attempt to) restart the service if it's ever killed
         startService(restartServiceIntent)
     }
+
+    fun initializeAppLockManager(stepCounterManager: StepCounterManager) {
+        appLockManager = AppLockManager(
+            context = this,
+            stepCounterManager = stepCounterManager,
+            lockedAppManager = lockedAppManager
+        )
+    }
+
+    fun getAppLockManager(): AppLockManager? =
+        if (::appLockManager.isInitialized) appLockManager else null
 }

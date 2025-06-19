@@ -1,9 +1,12 @@
 package com.nathanprazeres.walkunlock
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,6 +65,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun checkAccessibilityPermission() {
+        val appLockManager = stepCounterManager.getAppLockManager()
+        if (appLockManager != null && !appLockManager.hasAccessibilityPermission()) {
+            AlertDialog.Builder(this)
+                .setTitle("Accessibility Permission Required")
+                .setMessage("WalkUnlock needs accessibility permission to monitor app usage and enforce step requirements for locked apps.")
+                .setPositiveButton("Grant Permission") { _, _ ->
+                    appLockManager.requestAccessibilityPermission()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -81,6 +98,10 @@ class MainActivity : ComponentActivity() {
 
     private fun startStepCounter() {
         stepCounterManager.startService()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            checkAccessibilityPermission()
+        }, 1000)
     }
 
     override fun onDestroy() {

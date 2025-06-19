@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WalkUnlock</string>
+    <string name="accessibility_service_description">WalkUnlock monitors which apps are being used to enforce step requirements. This service does not collect or store any personal data.</string>
 </resources>

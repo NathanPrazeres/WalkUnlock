@@ -20,13 +20,15 @@ class StepCounterManager(private val context: Context) {
 
     val totalSteps = MutableStateFlow(0)
     val redeemedSteps = MutableStateFlow(0)
-    val availableSteps = MutableStateFlow(0)
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as WalkUnlockService.LocalBinder
             walkUnlockService = binder.getService()
             isServiceBound = true
+
+            // Initialize app lock manager
+            walkUnlockService?.initializeAppLockManager(this@StepCounterManager)
 
             // Synchronize step counter with service
             walkUnlockService?.let { serviceInstance ->
@@ -39,12 +41,6 @@ class StepCounterManager(private val context: Context) {
                 coroutineScope.launch {
                     serviceInstance.redeemedSteps.collect {
                         redeemedSteps.value = it
-                    }
-                }
-
-                coroutineScope.launch {
-                    serviceInstance.availableSteps.collect {
-                        availableSteps.value = it
                     }
                 }
             }
@@ -88,5 +84,14 @@ class StepCounterManager(private val context: Context) {
 
     fun redeemSteps(amount: Int) {
         walkUnlockService?.redeemSteps(amount)
+    }
+
+    fun getAppLockManager(): AppLockManager? {
+        return walkUnlockService?.getAppLockManager()
+    }
+
+    // TODO: remove this (only for testing with emulator)
+    fun addSteps(amount: Int) {
+        walkUnlockService?.addSteps(amount)
     }
 }

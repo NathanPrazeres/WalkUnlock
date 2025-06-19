@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <queries>
         <intent>
@@ -24,6 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WalkUnlock"
         tools:targetApi="31">
+
         <activity
             android:name="com.nathanprazeres.walkunlock.MainActivity"
             android:exported="true"
@@ -35,11 +37,30 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.nathanprazeres.walkunlock.ui.AppBlockedActivity"
+            android:exported="false"
+            android:theme="@style/Theme.WalkUnlock"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true" />
+
         <service
             android:name="com.nathanprazeres.walkunlock.services.WalkUnlockService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="health" />
+
+        <service
+            android:name="com.nathanprazeres.walkunlock.services.ForegroundAppService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
     </application>
 
 </manifest>
