@@ -28,8 +28,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 
 private val Context.dataStore by preferencesDataStore(name = "step_prefs")
@@ -56,6 +58,9 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
     private val binder = LocalBinder()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    // Add mutex for thread safety
+    private val stepMutex = Mutex()
 
     private lateinit var appLockManager: AppLockManager
     private lateinit var lockedAppManager: LockedAppManager
@@ -114,23 +119,29 @@ class WalkUnlockService() : Service(), SensorEventListener {
     }
 
     // STEP MANAGEMENT
-    private fun updateAvailableSteps() {
-        availableSteps.value = (totalSteps.value - redeemedSteps.value).coerceAtLeast(0)
-    }
-
     private fun loadStoredSteps() {
         serviceScope.launch {
-            dataStore.data.map { it[totalStepsKey] ?: 0 }.collect { steps ->
-                totalSteps.value = steps
-                updateAvailableSteps()
-                updateNotification()
-            }
-        }
+            // Each dataStore.data creates it's own flow so using combine
+            // will wait for both to emit before we perform any fetches
+            // meaning that they should be in sync and race condition safe.
+            combine(
+                dataStore.data,
+                dataStore.data
+            ) { prefs1, prefs2 ->
+                val total = prefs1[totalStepsKey] ?: 0
+                val redeemed = prefs2[redeemedStepsKey] ?: 0
+                Pair(total, redeemed)
+            }.collect { (total, redeemed) ->
+                stepMutex.withLock {
+                    totalSteps.value = total
+                    redeemedSteps.value = redeemed
+                    availableSteps.value = maxOf(0, total - redeemed)
 
-        serviceScope.launch {
-            dataStore.data.map { it[redeemedStepsKey] ?: 0 }.collect { steps ->
-                redeemedSteps.value = steps
-                updateAvailableSteps()
+                    Log.d(
+                        "WalkUnlockService",
+                        "Steps updated - Total: $total, Redeemed: $redeemed, Available: ${availableSteps.value}"
+                    )
+                }
                 updateNotification()
             }
         }
@@ -152,46 +163,72 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
     fun redeemSteps(amount: Int) {
         serviceScope.launch {
-            dataStore.edit { preferences ->
-                val currentRedeemed = preferences[redeemedStepsKey] ?: 0
-                val updatedRedeemed = currentRedeemed + amount
-                preferences[redeemedStepsKey] = updatedRedeemed
-                redeemedSteps.value = updatedRedeemed
+            stepMutex.withLock {
+                val currentTotal = totalSteps.value
+                val currentRedeemed = redeemedSteps.value
+                val newRedeemed = currentRedeemed + amount
+
+                // Safety check: don't allow redeemed steps to exceed total steps
+                if (newRedeemed > currentTotal) {
+                    Log.w(
+                        "WalkUnlockService",
+                        "Attempted to redeem $amount steps, but would exceed total. Total: $currentTotal, Current redeemed: $currentRedeemed"
+                    )
+                    return@withLock
+                }
+
+                dataStore.edit { preferences ->
+                    preferences[redeemedStepsKey] = newRedeemed
+                }
+
+                Log.d(
+                    "WalkUnlockService",
+                    "Redeemed $amount steps. New totals - Total: $currentTotal, Redeemed: $newRedeemed, Available: ${currentTotal - newRedeemed}"
+                )
             }
         }
-
-        updateAvailableSteps()
     }
 
     // TODO: remove this (only for testing with emulator)
     fun addSteps(amount: Int) {
         serviceScope.launch {
-            dataStore.edit { preferences ->
-                val currentTotal = preferences[totalStepsKey] ?: 0
-                val updatedTotal = currentTotal + amount
-                preferences[totalStepsKey] = updatedTotal
-                totalSteps.value = updatedTotal
+            stepMutex.withLock {
+                val currentTotal = totalSteps.value
+                val newTotal = currentTotal + amount
+
+                dataStore.edit { preferences ->
+                    preferences[totalStepsKey] = newTotal
+                }
+
+                Log.d("WalkUnlockService", "Added $amount steps. New total: $newTotal")
             }
         }
+    }
 
-        updateAvailableSteps()
-        Log.d(
-            "WalkUnlockService",
-            "Steps added. Current values: Available: ${availableSteps.value}, Redeemed: ${redeemedSteps.value}, Total: ${totalSteps.value}"
+    // APP LOCK MANAGEMENT
+    fun initializeAppLockManager(stepCounterManager: StepCounterManager) {
+        appLockManager = AppLockManager(
+            context = this,
+            stepCounterManager = stepCounterManager,
+            lockedAppManager = lockedAppManager
         )
     }
+
+    fun getAppLockManager(): AppLockManager? =
+        if (::appLockManager.isInitialized) appLockManager else null
 
     // SENSOR MANAGEMENT
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_DETECTOR) {
             val steps = event.values[0].toInt()
             serviceScope.launch {
-                dataStore.edit { preferences ->
-                    val currentTotal = preferences[totalStepsKey] ?: 0
-                    val updatedTotal = currentTotal + steps
-                    preferences[totalStepsKey] = updatedTotal
-                    totalSteps.value = updatedTotal
-                    updateAvailableSteps()
+                stepMutex.withLock {
+                    val currentTotal = totalSteps.value
+                    val newTotal = currentTotal + steps
+
+                    dataStore.edit { preferences ->
+                        preferences[totalStepsKey] = newTotal
+                    }
                 }
             }
         }
@@ -254,15 +291,4 @@ class WalkUnlockService() : Service(), SensorEventListener {
         // (Attempt to) restart the service if it's ever killed
         startService(restartServiceIntent)
     }
-
-    fun initializeAppLockManager(stepCounterManager: StepCounterManager) {
-        appLockManager = AppLockManager(
-            context = this,
-            stepCounterManager = stepCounterManager,
-            lockedAppManager = lockedAppManager
-        )
-    }
-
-    fun getAppLockManager(): AppLockManager? =
-        if (::appLockManager.isInitialized) appLockManager else null
 }

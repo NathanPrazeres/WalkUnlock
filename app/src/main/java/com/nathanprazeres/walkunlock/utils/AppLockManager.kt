@@ -160,12 +160,18 @@ class AppLockManager(
         )
 
         if (stepsToDeduct > 0) {
-            Log.d(TAG, "Deducting $stepsToDeduct steps for ${lockedApp.appName}")
-            stepCounterManager.redeemSteps(stepsToDeduct)
-            session.stepsCostSoFar += stepsToDeduct
+            // Check if we have enough available steps before deducting
+            val currentAvailableSteps = getAvailableSteps()
+            val actualStepsToDeduct = minOf(stepsToDeduct, currentAvailableSteps)
+            val remainingSteps = currentAvailableSteps - actualStepsToDeduct
 
-            val remainingSteps = getAvailableSteps()
-            showUsageNotification(lockedApp, totalMinutesUsed, remainingSteps)
+            if (actualStepsToDeduct > 0) {
+                Log.d(TAG, "Deducting $actualStepsToDeduct steps for ${lockedApp.appName}")
+                stepCounterManager.redeemSteps(actualStepsToDeduct)
+                session.stepsCostSoFar += actualStepsToDeduct
+
+                showUsageNotification(lockedApp, totalMinutesUsed, remainingSteps)
+            }
 
             // Check if user should be blocked after redemption
             if (remainingSteps < lockedApp.costPerMinute) {
@@ -199,18 +205,9 @@ class AppLockManager(
     private fun showUsageNotification(lockedApp: LockedApp, minutesUsed: Int, remainingSteps: Int) {
         handler.post {
             val message =
-                "${lockedApp.appName}: Used ${minutesUsed}min, ${remainingSteps} steps remaining"
+                "${lockedApp.appName}: Used ${minutesUsed}min, $remainingSteps steps remaining"
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
         }
-    }
-
-    fun stopMonitoring() {
-        Log.d(TAG, "Stopping app monitoring")
-        _isMonitoring.value = false
-        foregroundAppJob?.cancel()
-        stopUsageTracking()
-        foregroundAppJob = null
-        usageSessions.clear()
     }
 
     fun requestAccessibilityPermission() {
@@ -225,17 +222,6 @@ class AppLockManager(
 
     fun getUsageSession(packageName: String): AppUsageSession? {
         return usageSessions[packageName]
-    }
-
-    fun testBlockApp(packageName: String) {
-        scope.launch {
-            val lockedApps = lockedAppManager.lockedAppsFlow.firstOrNull() ?: emptyList()
-            val lockedApp = lockedApps.find { it.packageName == packageName }
-            if (lockedApp != null) {
-                Log.d(TAG, "Test: Manually blocking ${lockedApp.appName}")
-                blockApp(lockedApp)
-            }
-        }
     }
 
     fun getAvailableSteps(): Int {

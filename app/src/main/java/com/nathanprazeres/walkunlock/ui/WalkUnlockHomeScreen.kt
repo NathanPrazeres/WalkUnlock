@@ -37,8 +37,7 @@ fun WalkUnlockHomeScreen(
     stepCounterManager: StepCounterManager, lockedAppManager: LockedAppManager
 ) {
     val totalStepsState by stepCounterManager.totalSteps.collectAsState()
-//    val redeemedStepsState by stepCounterManager.redeemedSteps.collectAsState()
-    val availableStepsState by stepCounterManager.availableSteps.collectAsState()
+    val redeemedStepsState by stepCounterManager.redeemedSteps.collectAsState()
     val lockedAppsState by lockedAppManager.lockedAppsFlow.collectAsState(initial = emptyList())
 
     var showAddScreen by rememberSaveable { mutableStateOf(false) }
@@ -63,13 +62,16 @@ fun WalkUnlockHomeScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            StepCard(availableSteps = availableStepsState, totalSteps = totalStepsState)
+            StepCard(
+                availableSteps = totalStepsState - redeemedStepsState,
+                totalSteps = totalStepsState
+            )
 
             Text("Locked Apps", style = MaterialTheme.typography.titleMedium)
 
             lockedAppsState.forEach { app ->
                 LockedAppCard(
-                    app = app, availableSteps = availableStepsState, onRemove = {
+                    app = app, availableSteps = totalStepsState - redeemedStepsState, onRemove = {
                         coroutineScope.launch {
                             try {
                                 lockedAppManager.removeLockedApp(app.packageName)
@@ -78,7 +80,8 @@ fun WalkUnlockHomeScreen(
                                 // TODO: make sure that there's no way for app.packageName to fail
                             }
                         }
-                    })
+                    }
+                )
             }
         }
     }
