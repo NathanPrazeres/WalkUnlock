@@ -1,6 +1,7 @@
 package com.nathanprazeres.walkunlock.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,7 +31,7 @@ import com.nathanprazeres.walkunlock.models.LockedApp
 
 
 @Composable
-fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
+fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit, onClick: () -> Unit) {
     val appName = app.appName
     val costPerMinute = app.costPerMinute
 
@@ -40,7 +41,11 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onClick()
+            },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
