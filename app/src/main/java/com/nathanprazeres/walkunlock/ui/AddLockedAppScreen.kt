@@ -128,7 +128,6 @@ fun AddLockedAppScreen(
                     if (selectedApp != null && costPerMinute.isNotEmpty()) {
                         IconButton(
                             onClick = {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 selectedApp?.let {
                                     try {
                                         onAppSelected(
@@ -149,6 +148,7 @@ fun AddLockedAppScreen(
                                         onBackClick()
                                     }
                                 }
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         ) {
                             Icon(Icons.Default.Check, contentDescription = "Confirm")
