@@ -25,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.utils.LockedAppManager
 import com.nathanprazeres.walkunlock.utils.StepCounterManager
@@ -44,14 +46,22 @@ fun WalkUnlockHomeScreen(
     var showAddScreen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    val hapticFeedback = LocalHapticFeedback.current
+
     Scaffold(topBar = {
         TopAppBar(title = { Text("WalkUnlock") }, actions = {
-            IconButton(onClick = { /* TODO: navigate to settings */ }) {
+            IconButton(onClick = {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                /* TODO: navigate to settings */
+            }) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
         })
     }, floatingActionButton = {
-        FloatingActionButton(onClick = { showAddScreen = true }) {
+        FloatingActionButton(onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            showAddScreen = true
+        }) {
             Icon(Icons.Default.Add, contentDescription = "Add")
         }
     }) { padding ->

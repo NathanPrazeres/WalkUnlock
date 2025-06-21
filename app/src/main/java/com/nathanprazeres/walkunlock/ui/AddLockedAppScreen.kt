@@ -48,7 +48,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.models.LockedApp
 import com.nathanprazeres.walkunlock.utils.InstalledApps
@@ -62,6 +64,7 @@ fun AddLockedAppScreen(
     onAppSelected: (LockedApp) -> Unit
 ) {
     val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
 
     var apps by remember { mutableStateOf<List<LockedApp>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -102,7 +105,10 @@ fun AddLockedAppScreen(
             TopAppBar(
                 title = { Text("Select App to Lock") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onBackClick()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -110,6 +116,7 @@ fun AddLockedAppScreen(
                     // Refresh button
                     IconButton(
                         onClick = {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             coroutineScope.launch {
                                 loadApps(refresh = true)
                             }
@@ -121,6 +128,7 @@ fun AddLockedAppScreen(
                     if (selectedApp != null && costPerMinute.isNotEmpty()) {
                         IconButton(
                             onClick = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                 selectedApp?.let {
                                     try {
                                         onAppSelected(
@@ -312,7 +320,10 @@ fun AddLockedAppScreen(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { selectedApp = app },
+                                    .clickable {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        selectedApp = app
+                                    },
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (selectedApp?.packageName == app.packageName) {
                                         MaterialTheme.colorScheme.secondaryContainer

@@ -29,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.models.LockedApp
 
@@ -44,12 +46,14 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
     val isUsable = availableSteps >= costPerMinute
 
     val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
 
     Card(
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 openApp(context, app)
             },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
@@ -76,7 +80,10 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                IconButton(onClick = onRemove) {
+                IconButton(onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onRemove()
+                }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Remove",
