@@ -35,8 +35,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun WalkUnlockHomeScreen(
     stepCounterManager: StepCounterManager,
-    lockedAppManager: LockedAppManager,
-    openApp: (String) -> Unit
+    lockedAppManager: LockedAppManager
 ) {
     val totalStepsState by stepCounterManager.totalSteps.collectAsState()
     val redeemedStepsState by stepCounterManager.redeemedSteps.collectAsState()
@@ -82,8 +81,6 @@ fun WalkUnlockHomeScreen(
                                 // TODO: make sure that there's no way for app.packageName to fail
                             }
                         }
-                    }, onClick = {
-                        openApp(app.packageName)
                     }
                 )
             }

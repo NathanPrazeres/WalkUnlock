@@ -1,5 +1,8 @@
 package com.nathanprazeres.walkunlock.ui
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,12 +29,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.models.LockedApp
 
 
 @Composable
-fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit, onClick: () -> Unit) {
+fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
     val appName = app.appName
     val costPerMinute = app.costPerMinute
 
@@ -39,12 +43,14 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit, onC
         if (costPerMinute > 0) availableSteps / costPerMinute else "Unlimited usage available"
     val isUsable = availableSteps >= costPerMinute
 
+    val context = LocalContext.current
+
     Card(
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                onClick()
+                openApp(context, app)
             },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
@@ -100,5 +106,18 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit, onC
                 color = MaterialTheme.colorScheme.secondary
             )
         }
+    }
+}
+
+private var currentToast: Toast? = null
+fun openApp(context: Context, app: LockedApp) {
+    val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
+        ?.addCategory(Intent.CATEGORY_LAUNCHER)
+    try {
+        context.startActivity(intent)
+    } catch (_: Exception) {
+        currentToast?.cancel()
+        currentToast = Toast.makeText(context, "${app.appName} isn't installed", Toast.LENGTH_SHORT)
+        currentToast?.show()
     }
 }

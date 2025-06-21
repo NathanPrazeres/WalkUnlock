@@ -172,7 +172,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             WalkUnlockTheme {
                 WalkUnlockHomeScreen(
-                    stepCounterManager = stepCounterManager, lockedAppManager = lockedAppManager, openApp = this::openApp
+                    stepCounterManager = stepCounterManager, lockedAppManager = lockedAppManager
                 )
             }
         }
@@ -189,12 +189,5 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stepCounterManager.unbindService()
-    }
-
-    private fun openApp(packageName: String) {
-        val intent = packageManager.getLaunchIntentForPackage(packageName)?.addCategory(Intent.CATEGORY_LAUNCHER)
-        try {
-            startActivity(intent)
-        } catch (_: Exception) {}
     }
 }
