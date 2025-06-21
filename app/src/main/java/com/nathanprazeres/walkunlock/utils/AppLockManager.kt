@@ -7,6 +7,7 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import com.nathanprazeres.walkunlock.models.AppUsageSession
 import com.nathanprazeres.walkunlock.models.LockedApp
 import com.nathanprazeres.walkunlock.services.ForegroundAppService
 import com.nathanprazeres.walkunlock.ui.AppBlockedActivity
@@ -30,7 +31,6 @@ class AppLockManager(
 ) {
     companion object {
         private const val TAG = "AppLockManager"
-        private const val USAGE_CHECK_INTERVAL = 10000L
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -44,14 +44,6 @@ class AppLockManager(
     private val isMonitoring = MutableStateFlow(false)
     private val blockedApps = MutableStateFlow<Set<String>>(emptySet())
     private val currentForegroundApp = MutableStateFlow<String?>(null)
-
-    data class AppUsageSession(
-        val packageName: String,
-        val startTime: Long,
-        var lastUsageCheckTime: Long,
-        var totalUsageTime: Long = 0L,
-        var stepsCostSoFar: Int = 0
-    )
 
     init {
         startMonitoring()
@@ -138,7 +130,7 @@ class AppLockManager(
                 // Check if app is still in foreground and we're still monitoring
                 updateUsageAndCheckSteps(lockedApp)
 
-                delay(USAGE_CHECK_INTERVAL)
+                delay(TimeUnit.MINUTES.toMillis(1))
             }
         }
     }

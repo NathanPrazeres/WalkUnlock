@@ -19,8 +19,6 @@ class ForegroundAppService : AccessibilityService() {
         private var serviceInstance: ForegroundAppService? = null
 
         fun getInstance(): ForegroundAppService? = serviceInstance
-
-        fun getCurrentForegroundApp(): String? = _currentForegroundApp.value
     }
 
     override fun onServiceConnected() {
