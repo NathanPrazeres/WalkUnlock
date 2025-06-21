@@ -138,16 +138,15 @@ fun AddLockedAppScreen(
                                                 it.icon
                                             )
                                         )
-                                        onBackClick()
                                     } catch (e: Exception) {
                                         Toast.makeText(
                                             context,
                                             "Failed to add App: $e",
                                             Toast.LENGTH_SHORT
                                         ).show()
-                                        onBackClick()
                                     }
                                 }
+                                onBackClick()
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                         ) {
