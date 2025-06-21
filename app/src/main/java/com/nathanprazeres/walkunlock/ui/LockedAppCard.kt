@@ -34,7 +34,8 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
     val appName = app.appName
     val costPerMinute = app.costPerMinute
 
-    val minutesAvailable = if (costPerMinute > 0) availableSteps / costPerMinute else "Unlimited"
+    val minutesAvailable =
+        if (costPerMinute > 0) availableSteps / costPerMinute else "Unlimited usage available"
     val isUsable = availableSteps >= costPerMinute
 
     Card(
@@ -76,7 +77,7 @@ fun LockedAppCard(app: LockedApp, availableSteps: Int, onRemove: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "$costPerMinute steps/min : $minutesAvailable minute${if (minutesAvailable != 1) "s" else ""} available",
+                text = if (costPerMinute > 0) "$costPerMinute steps/min : $minutesAvailable minute${if (minutesAvailable != 1) "s" else ""} available" else minutesAvailable.toString(),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.alpha(if (isUsable) 1f else 0.5f),
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
