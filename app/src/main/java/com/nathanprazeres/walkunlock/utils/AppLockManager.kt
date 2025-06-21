@@ -37,9 +37,9 @@ class AppLockManager(
 
     private val usageSessions = ConcurrentHashMap<String, AppUsageSession>()
 
-    private val _isMonitoring = MutableStateFlow(false)
-    private val _blockedApps = MutableStateFlow<Set<String>>(emptySet())
-    private val _currentForegroundApp = MutableStateFlow<String?>(null)
+    private val isMonitoring = MutableStateFlow(false)
+    private val blockedApps = MutableStateFlow<Set<String>>(emptySet())
+    private val currentForegroundApp = MutableStateFlow<String?>(null)
 
     data class AppUsageSession(
         val packageName: String,
@@ -54,15 +54,15 @@ class AppLockManager(
     }
 
     fun startMonitoring() {
-        if (_isMonitoring.value) return
+        if (isMonitoring.value) return
 
         Log.d(TAG, "Starting app monitoring with accessibility service")
-        _isMonitoring.value = true
+        isMonitoring.value = true
 
         // Launch a job to monitor app changes
         foregroundAppJob = scope.launch {
             ForegroundAppService.currentForegroundApp.collect { packageName ->
-                _currentForegroundApp.value = packageName
+                currentForegroundApp.value = packageName
 
                 if (packageName != null && packageName != context.packageName) {
                     handleAppChange(packageName)
@@ -116,14 +116,14 @@ class AppLockManager(
         startUsageTracking(lockedApp)
 
         // Remove from blocked apps if it was previously blocked
-        _blockedApps.value = _blockedApps.value - packageName
+        blockedApps.value = blockedApps.value - packageName
     }
 
     private fun startUsageTracking(lockedApp: LockedApp) {
         stopUsageTracking()
 
         usageTrackingJob = scope.launch {
-            while (_currentForegroundApp.value == lockedApp.packageName && _isMonitoring.value) {
+            while (currentForegroundApp.value == lockedApp.packageName && isMonitoring.value) {
                 // Check if app is still in foreground and we're still monitoring
                 updateUsageAndCheckSteps(lockedApp)
 
@@ -185,7 +185,7 @@ class AppLockManager(
     private fun blockApp(lockedApp: LockedApp) {
         Log.d(TAG, "Blocking app: ${lockedApp.appName}")
 
-        _blockedApps.value = _blockedApps.value + lockedApp.packageName
+        blockedApps.value = blockedApps.value + lockedApp.packageName
 
         // Stop tracking usage when blocking
         stopUsageTracking()
