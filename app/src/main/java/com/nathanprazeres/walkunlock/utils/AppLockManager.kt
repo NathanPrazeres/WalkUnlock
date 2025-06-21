@@ -72,11 +72,6 @@ class AppLockManager(
 
     private suspend fun handleAppChange(packageName: String) {
         blockingMutex.withLock {
-            if (blockedApps.value.contains(packageName)) {
-                Log.d(TAG, "App $packageName is already blocked, ignoring")
-                return@withLock
-            }
-
             val lockedApps = lockedAppManager.lockedAppsFlow.firstOrNull() ?: emptyList()
             val lockedApp = lockedApps.find { it.packageName == packageName }
 
