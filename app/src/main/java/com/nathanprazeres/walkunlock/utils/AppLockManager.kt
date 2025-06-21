@@ -17,6 +17,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
@@ -36,6 +38,7 @@ class AppLockManager(
     private var usageTrackingJob: Job? = null
     private val handler = Handler(Looper.getMainLooper())
 
+    private val blockingMutex = Mutex()
     private val usageSessions = ConcurrentHashMap<String, AppUsageSession>()
 
     private val isMonitoring = MutableStateFlow(false)
@@ -76,15 +79,22 @@ class AppLockManager(
     }
 
     private suspend fun handleAppChange(packageName: String) {
-        val lockedApps = lockedAppManager.lockedAppsFlow.firstOrNull() ?: emptyList()
-        val lockedApp = lockedApps.find { it.packageName == packageName }
+        blockingMutex.withLock {
+            if (blockedApps.value.contains(packageName)) {
+                Log.d(TAG, "App $packageName is already blocked, ignoring")
+                return@withLock
+            }
 
-        if (lockedApp != null) {
-            handleLockedAppUsage(lockedApp)
-        } else {
-            // Clean up session if app is no longer locked
-            usageSessions.remove(packageName)
-            stopUsageTracking()
+            val lockedApps = lockedAppManager.lockedAppsFlow.firstOrNull() ?: emptyList()
+            val lockedApp = lockedApps.find { it.packageName == packageName }
+
+            if (lockedApp != null) {
+                handleLockedAppUsage(lockedApp)
+            } else {
+                // Clean up session if app is no longer locked
+                usageSessions.remove(packageName)
+                stopUsageTracking()
+            }
         }
     }
 
@@ -138,47 +148,52 @@ class AppLockManager(
         usageTrackingJob = null
     }
 
-    private fun updateUsageAndCheckSteps(lockedApp: LockedApp) {
-        val currentTime = System.currentTimeMillis()
-        val packageName = lockedApp.packageName
-        val session = getUsageSession(packageName) ?: return
-
-        Log.d(TAG, "Updating usage for ${lockedApp.appName}")
-
-        // Update total usage time
-        val timeSinceLastCheck = currentTime - session.lastUsageCheckTime
-        session.totalUsageTime += timeSinceLastCheck
-        session.lastUsageCheckTime = currentTime
-
-        // Calculate how many minutes have been used
-        val totalMinutesUsed = (session.totalUsageTime / TimeUnit.MINUTES.toMillis(1)).toInt()
-        val stepsCostForTotalMinutes = totalMinutesUsed * lockedApp.costPerMinute
-        val stepsToDeduct = stepsCostForTotalMinutes - session.stepsCostSoFar
-
-        Log.d(
-            TAG,
-            "Usage update - Total time: ${session.totalUsageTime}ms, Minutes: $totalMinutesUsed, Steps to deduct: $stepsToDeduct"
-        )
-
-        if (stepsToDeduct > 0) {
-            // Check if we have enough available steps before deducting
-            val currentAvailableSteps = getAvailableSteps()
-            val actualStepsToDeduct = minOf(stepsToDeduct, currentAvailableSteps)
-            val remainingSteps = currentAvailableSteps - actualStepsToDeduct
-
-            if (actualStepsToDeduct > 0) {
-                Log.d(TAG, "Deducting $actualStepsToDeduct steps for ${lockedApp.appName}")
-                stepCounterManager.redeemSteps(actualStepsToDeduct)
-                session.stepsCostSoFar += actualStepsToDeduct
-
-                showUsageNotification(lockedApp, totalMinutesUsed, remainingSteps)
+    private suspend fun updateUsageAndCheckSteps(lockedApp: LockedApp) {
+        blockingMutex.withLock {
+            if (blockedApps.value.contains(lockedApp.packageName)) {
+                return@withLock
             }
 
-            // Check if user should be blocked after redemption
-            if (remainingSteps < lockedApp.costPerMinute) {
-                Log.d(TAG, "User ran out of steps, blocking app")
-                blockApp(lockedApp)
-                return
+            val currentTime = System.currentTimeMillis()
+            val packageName = lockedApp.packageName
+            val session = getUsageSession(packageName) ?: return
+
+            Log.d(TAG, "Updating usage for ${lockedApp.appName}")
+
+            // Update total usage time
+            val timeSinceLastCheck = currentTime - session.lastUsageCheckTime
+            session.totalUsageTime += timeSinceLastCheck
+            session.lastUsageCheckTime = currentTime
+
+            // Calculate how many minutes have been used
+            val totalMinutesUsed = (session.totalUsageTime / TimeUnit.MINUTES.toMillis(1)).toInt()
+            val stepsCostForTotalMinutes = totalMinutesUsed * lockedApp.costPerMinute
+            val stepsToDeduct = stepsCostForTotalMinutes - session.stepsCostSoFar
+
+            Log.d(
+                TAG,
+                "Usage update - Total time: ${session.totalUsageTime}ms, Minutes: $totalMinutesUsed, Steps to deduct: $stepsToDeduct"
+            )
+
+            if (stepsToDeduct > 0) {
+                // Check if we have enough available steps before deducting
+                val currentAvailableSteps = getAvailableSteps()
+                val actualStepsToDeduct = minOf(stepsToDeduct, currentAvailableSteps)
+                val remainingSteps = currentAvailableSteps - actualStepsToDeduct
+
+                if (actualStepsToDeduct > 0) {
+                    Log.d(TAG, "Deducting $actualStepsToDeduct steps for ${lockedApp.appName}")
+                    stepCounterManager.redeemSteps(actualStepsToDeduct)
+                    session.stepsCostSoFar += actualStepsToDeduct
+
+                    showUsageNotification(lockedApp, totalMinutesUsed, remainingSteps)
+                }
+
+                // Check if user should be blocked after redemption
+                if (remainingSteps < lockedApp.costPerMinute) {
+                    Log.d(TAG, "User ran out of steps, blocking app")
+                    blockApp(lockedApp)
+                }
             }
         }
     }
@@ -190,6 +205,7 @@ class AppLockManager(
 
         // Stop tracking usage when blocking
         stopUsageTracking()
+        usageSessions.remove(lockedApp.packageName)
 
         handler.post {
             val intent = Intent(context, AppBlockedActivity::class.java).apply {
@@ -199,8 +215,6 @@ class AppLockManager(
             }
             context.startActivity(intent)
         }
-
-        usageSessions.remove(lockedApp.packageName)
     }
 
     private fun showUsageNotification(lockedApp: LockedApp, minutesUsed: Int, remainingSteps: Int) {
