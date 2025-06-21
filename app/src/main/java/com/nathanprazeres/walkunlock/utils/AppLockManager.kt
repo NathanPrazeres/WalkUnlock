@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+
 class AppLockManager(
     private val context: Context,
     private val stepCounterManager: StepCounterManager,
