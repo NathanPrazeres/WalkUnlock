@@ -291,4 +291,21 @@ class WalkUnlockService() : Service(), SensorEventListener {
         // (Attempt to) restart the service if it's ever killed
         startService(restartServiceIntent)
     }
+
+    fun forceShutdown() {
+        Log.d("WalkUnlockService", "Force shutdown requested")
+
+        // Stop app lock manager if initialized
+        if (::appLockManager.isInitialized) {
+            appLockManager.stopMonitoring()
+        }
+
+        stopStepCounting()
+        serviceScope.launch { }
+
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+
+        Log.d("WalkUnlockService", "Force shutdown completed")
+    }
 }

@@ -116,6 +116,9 @@ fun WalkUnlockHomeScreen(
             }
         })
     } else if (showSettingsScreen) {
-        SettingsScreen(onBackClick = { showSettingsScreen = false })
+        SettingsScreen(
+            onBackClick = { showSettingsScreen = false },
+            stepCounterManager = stepCounterManager
+        )
     }
 }

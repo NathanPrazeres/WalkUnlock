@@ -229,4 +229,21 @@ class AppLockManager(
     fun getAvailableSteps(): Int {
         return stepCounterManager.totalSteps.value - stepCounterManager.redeemedSteps.value
     }
+
+    fun stopMonitoring() {
+        Log.d(TAG, "Stopping app monitoring")
+        isMonitoring.value = false
+
+        foregroundAppJob?.cancel()
+        stopUsageTracking()
+
+        foregroundAppJob = null
+        usageSessions.clear()
+        blockedApps.value = emptySet()
+        currentForegroundApp.value = null
+
+        ForegroundAppService.shutdownService()
+
+        Log.d(TAG, "App monitoring stopped successfully")
+    }
 }

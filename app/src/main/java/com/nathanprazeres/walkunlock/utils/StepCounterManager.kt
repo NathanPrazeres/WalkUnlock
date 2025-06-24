@@ -82,6 +82,16 @@ class StepCounterManager(private val context: Context) {
         }
     }
 
+    fun shutdownApp() {
+        walkUnlockService?.getAppLockManager()?.stopMonitoring()
+        walkUnlockService?.forceShutdown()
+
+        stopService()
+
+        totalSteps.value = 0
+        redeemedSteps.value = 0
+    }
+
     fun redeemSteps(amount: Int) {
         walkUnlockService?.redeemSteps(amount)
     }
