@@ -210,7 +210,7 @@ fun SettingsScreen(onBackClick: () -> Unit) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(
-                                text = "WalkUnlock Version",
+                                text = "${context.applicationInfo.loadLabel(context.packageManager)} Version",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )

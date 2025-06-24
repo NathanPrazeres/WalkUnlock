@@ -26,6 +26,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.utils.LockedAppManager
@@ -48,16 +49,20 @@ fun WalkUnlockHomeScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val hapticFeedback = LocalHapticFeedback.current
+    val context = LocalContext.current
 
     Scaffold(topBar = {
-        TopAppBar(title = { Text("WalkUnlock") }, actions = {
-            IconButton(onClick = {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                showSettingsScreen = true
-            }) {
-                Icon(Icons.Default.Settings, contentDescription = "Settings")
+        TopAppBar(
+            title = { Text("${context.applicationInfo.loadLabel(context.packageManager)}") },
+            actions = {
+                IconButton(onClick = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showSettingsScreen = true
+                }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+                }
             }
-        })
+        )
     }, floatingActionButton = {
         FloatingActionButton(onClick = {
             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
