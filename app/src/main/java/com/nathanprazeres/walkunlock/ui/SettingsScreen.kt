@@ -243,7 +243,7 @@ fun getAppVersion(
         } else {
             packageManager.getPackageInfo(packageName, 0)
         }
-        return packageInfo.versionName
+        packageInfo.versionName
     } catch (_: Exception) {
         null
     }
