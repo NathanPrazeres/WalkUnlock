@@ -44,6 +44,7 @@ fun WalkUnlockHomeScreen(
     val lockedAppsState by lockedAppManager.lockedAppsFlow.collectAsState(initial = emptyList())
 
     var showAddScreen by rememberSaveable { mutableStateOf(false) }
+    var showSettingsScreen by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     val hapticFeedback = LocalHapticFeedback.current
@@ -52,7 +53,7 @@ fun WalkUnlockHomeScreen(
         TopAppBar(title = { Text("WalkUnlock") }, actions = {
             IconButton(onClick = {
                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                /* TODO: navigate to settings */
+                showSettingsScreen = true
             }) {
                 Icon(Icons.Default.Settings, contentDescription = "Settings")
             }
@@ -109,5 +110,7 @@ fun WalkUnlockHomeScreen(
                 }
             }
         })
+    } else if (showSettingsScreen) {
+        SettingsScreen(onBackClick = { showSettingsScreen = false })
     }
 }
