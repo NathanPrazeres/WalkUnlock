@@ -24,7 +24,6 @@ import android.R.style.Theme_Material_Dialog_Alert as DIALOG_ALERT_THEME
 
 
 class MainActivity : ComponentActivity() {
-    private val appName = this.applicationInfo.loadLabel(this.packageManager)
     private lateinit var stepCounterManager: StepCounterManager
     private lateinit var lockedAppManager: LockedAppManager
 
@@ -54,7 +53,7 @@ class MainActivity : ComponentActivity() {
             AlertDialog.Builder(this, DIALOG_ALERT_THEME)
                 .setTitle("Required Permissions")
                 .setMessage(
-                    "$appName requires the following permissions in order to function correctly:\n\t- ${
+                    "WalkUnlock requires the following permissions in order to function correctly:\n\t- ${
                         deniedPermissions.joinToString(
                             "\n\t- "
                         ) { s -> s.split('.').reversed()[0] }
@@ -99,7 +98,7 @@ class MainActivity : ComponentActivity() {
         if (appLockManager != null && !appLockManager.hasAccessibilityPermission()) {
             AlertDialog.Builder(this, DIALOG_ALERT_THEME)
                 .setTitle("Accessibility Permission Required")
-                .setMessage("$appName needs accessibility permission to monitor app usage and enforce step requirements for locked apps.\n\nThis permission is necessary in order for this app to work.")
+                .setMessage("WalkUnlock needs accessibility permission to monitor app usage and enforce step requirements for locked apps.\n\nThis permission is necessary in order for this app to work.")
                 .setPositiveButton("Grant Permission") { _, _ ->
                     appLockManager.requestAccessibilityPermission()
                 }
@@ -115,7 +114,7 @@ class MainActivity : ComponentActivity() {
             if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
                 AlertDialog.Builder(this, DIALOG_ALERT_THEME)
                     .setTitle("Battery Optimization")
-                    .setMessage("To ensure $appName works properly in the background, please disable battery optimization for this app.\n\nThis will:\n- Keep step counting accurate\n- Allow app blocking to work reliably")
+                    .setMessage("To ensure WalkUnlock works properly in the background, please disable battery optimization for this app.\n\nThis will:\n- Keep step counting accurate\n- Allow app blocking to work reliably")
                     .setPositiveButton("Continue") { _, _ ->
                         requestIgnoreBatteryOptimization()
                     }
@@ -148,7 +147,7 @@ class MainActivity : ComponentActivity() {
 
                     Toast.makeText(
                         this,
-                        "Please find $appName in the list and disable battery optimization",
+                        "Please find WalkUnlock in the list and disable battery optimization",
                         Toast.LENGTH_LONG
                     ).show()
                 } catch (_: Exception) {
