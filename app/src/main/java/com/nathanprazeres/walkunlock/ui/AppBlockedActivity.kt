@@ -1,12 +1,8 @@
 package com.nathanprazeres.walkunlock.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.VibrationAttributes
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -48,7 +44,14 @@ class AppBlockedActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val blockedApp = intent.getParcelableExtra<LockedApp>("blocked_app", LockedApp::class.java)
+        var blockedApp: LockedApp?
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            blockedApp = intent.getParcelableExtra<LockedApp>("blocked_app", LockedApp::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            blockedApp = intent.getParcelableExtra<LockedApp>("blocked_app")
+        }
+
         val availableSteps = intent.getIntExtra("available_steps", 0)
 
         setContent {
