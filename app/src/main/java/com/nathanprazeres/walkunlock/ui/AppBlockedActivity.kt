@@ -63,7 +63,8 @@ class AppBlockedActivity : ComponentActivity() {
                         }
 
                         baseContext.startActivity(intent)
-                    })
+                    }
+                )
             }
         }
     }
@@ -157,7 +158,7 @@ fun AppBlockedScreen(
                             onBackPressed()
                         }) {
                         Text(
-                            text = "Return to WalkUnlock",
+                            text = "Return to ${context.applicationInfo.loadLabel(context.packageManager)}",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
