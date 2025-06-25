@@ -99,9 +99,4 @@ class StepCounterManager(private val context: Context) {
     fun getAppLockManager(): AppLockManager? {
         return walkUnlockService?.getAppLockManager()
     }
-
-    // TODO: remove this (only for testing with emulator)
-    fun addSteps(amount: Int) {
-        walkUnlockService?.addSteps(amount)
-    }
 }

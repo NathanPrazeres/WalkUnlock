@@ -134,15 +134,4 @@ class LockedAppManager(private val context: Context) {
                 .show()
         }
     }
-
-    suspend fun clearLockedApps() {
-        try {
-            context.dataStore.edit { preferences ->
-                preferences.remove(lockedAppsKey)
-            }
-        } catch (e: Exception) {
-            Log.e("clearLockedApps", "${e.message}")
-            Toast.makeText(context, "Error clearing locked apps", Toast.LENGTH_SHORT).show()
-        }
-    }
 }
