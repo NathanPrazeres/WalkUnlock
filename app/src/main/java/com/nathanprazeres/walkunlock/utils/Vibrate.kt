@@ -23,11 +23,15 @@ fun vibrate(context: Context) {
                 vibrationPattern, amplitudes, -1
             )
 
-            val attributes = VibrationAttributes.Builder()
-                .setUsage(VibrationAttributes.USAGE_ACCESSIBILITY)
-                .build()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val attributes = VibrationAttributes.Builder()
+                    .setUsage(VibrationAttributes.USAGE_ACCESSIBILITY)
+                    .build()
 
-            vibrator.vibrate(vibrationEffect, attributes)
+                vibrator.vibrate(vibrationEffect, attributes)
+            } else {
+                vibrator.vibrate(vibrationEffect)
+            }
         } else {
             // Fallback for older devices
             @Suppress("DEPRECATION")
