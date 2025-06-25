@@ -242,8 +242,6 @@ class AppLockManager(
         blockedApps.value = emptySet()
         currentForegroundApp.value = null
 
-        ForegroundAppService.shutdownService()
-
         Log.d(TAG, "App monitoring stopped successfully")
     }
 }

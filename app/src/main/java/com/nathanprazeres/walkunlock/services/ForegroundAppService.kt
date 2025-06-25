@@ -19,11 +19,6 @@ class ForegroundAppService : AccessibilityService() {
         private var serviceInstance: ForegroundAppService? = null
 
         fun getInstance(): ForegroundAppService? = serviceInstance
-
-        // Static method to shutdown from outside
-        fun shutdownService() {
-            getInstance()?.shutdown()
-        }
     }
 
     override fun onServiceConnected() {
