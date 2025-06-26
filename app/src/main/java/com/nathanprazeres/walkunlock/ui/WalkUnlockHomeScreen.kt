@@ -94,7 +94,6 @@ fun WalkUnlockHomeScreen(
                                 lockedAppManager.removeLockedApp(app.packageName)
                             } catch (_: Exception) {
                                 // This should be unreachable since errors are handled inside .removeLockedApp
-                                // TODO: make sure that there's no way for app.packageName to fail
                             }
                         }
                     }

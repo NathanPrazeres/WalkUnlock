@@ -27,10 +27,6 @@ class AppLockManager(
     private val stepCounterManager: StepCounterManager,
     private val lockedAppManager: LockedAppManager
 ) {
-    companion object {
-        private const val TAG = "AppLockManager"
-    }
-
     private val scope = CoroutineScope(Dispatchers.IO)
     private var foregroundAppJob: Job? = null
     private var usageTrackingJob: Job? = null
@@ -49,7 +45,6 @@ class AppLockManager(
     fun startMonitoring() {
         if (isMonitoring.value) return
 
-        Log.d(TAG, "Starting app monitoring with accessibility service")
         isMonitoring.value = true
 
         // Launch a job to monitor app changes
@@ -87,11 +82,6 @@ class AppLockManager(
         // Check if app should be blocked FIRST
         val availableSteps = getAvailableSteps()
         val canUseApp = availableSteps >= lockedApp.costPerMinute
-
-        Log.d(
-            TAG,
-            "Checking ${lockedApp.appName}: available=$availableSteps, required=${lockedApp.costPerMinute}, canUse=$canUseApp"
-        )
 
         if (!canUseApp) {
             blockApp(lockedApp)
@@ -139,8 +129,6 @@ class AppLockManager(
         val packageName = lockedApp.packageName
         val session = getUsageSession(packageName) ?: return
 
-        Log.d(TAG, "Updating usage for ${lockedApp.appName}")
-
         // Update total usage time
         val timeSinceLastCheck = currentTime - session.lastUsageCheckTime
         session.totalUsageTime += timeSinceLastCheck
@@ -151,11 +139,6 @@ class AppLockManager(
         val stepsCostForTotalMinutes = totalMinutesUsed * lockedApp.costPerMinute
         val stepsToDeduct = stepsCostForTotalMinutes - session.stepsCostSoFar
 
-        Log.d(
-            TAG,
-            "Usage update - Total time: ${session.totalUsageTime}ms, Minutes: $totalMinutesUsed, Steps to deduct: $stepsToDeduct"
-        )
-
         if (stepsToDeduct > 0) {
             // Check if we have enough available steps before deducting
             val currentAvailableSteps = getAvailableSteps()
@@ -163,7 +146,6 @@ class AppLockManager(
             val remainingSteps = currentAvailableSteps - actualStepsToDeduct
 
             if (actualStepsToDeduct > 0) {
-                Log.d(TAG, "Deducting $actualStepsToDeduct steps for ${lockedApp.appName}")
                 stepCounterManager.redeemSteps(actualStepsToDeduct)
                 session.stepsCostSoFar += actualStepsToDeduct
 
@@ -172,15 +154,12 @@ class AppLockManager(
 
             // Check if user should be blocked after redemption
             if (remainingSteps < lockedApp.costPerMinute) {
-                Log.d(TAG, "User ran out of steps, blocking app")
                 blockApp(lockedApp)
             }
         }
     }
 
     private fun blockApp(lockedApp: LockedApp) {
-        Log.d(TAG, "Blocking app: ${lockedApp.appName}")
-
         blockedApps.value = blockedApps.value + lockedApp.packageName
 
         // Stop tracking usage when blocking
@@ -224,7 +203,6 @@ class AppLockManager(
     }
 
     fun stopMonitoring() {
-        Log.d(TAG, "Stopping app monitoring")
         isMonitoring.value = false
 
         foregroundAppJob?.cancel()
@@ -234,7 +212,5 @@ class AppLockManager(
         usageSessions.clear()
         blockedApps.value = emptySet()
         currentForegroundApp.value = null
-
-        Log.d(TAG, "App monitoring stopped successfully")
     }
 }

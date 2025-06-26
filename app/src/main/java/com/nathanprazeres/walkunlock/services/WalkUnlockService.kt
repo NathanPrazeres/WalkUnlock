@@ -136,11 +136,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
                     totalSteps.value = total
                     redeemedSteps.value = redeemed
                     availableSteps.value = maxOf(0, total - redeemed)
-
-                    Log.d(
-                        "WalkUnlockService",
-                        "Steps updated - Total: $total, Redeemed: $redeemed, Available: ${availableSteps.value}"
-                    )
                 }
                 updateNotification()
             }
@@ -148,10 +143,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
     }
 
     private fun startStepCounting() {
-        // TODO: remove logs (they are for debug purposes only)
-        Log.d("StepSensor", "Available sensors: ${sensorManager.getSensorList(Sensor.TYPE_ALL)}")
-        Log.d("StepSensor", "Step detector sensor available: ${stepSensor != null}")
-
         stepSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         }
@@ -180,27 +171,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
                 dataStore.edit { preferences ->
                     preferences[redeemedStepsKey] = newRedeemed
                 }
-
-                Log.d(
-                    "WalkUnlockService",
-                    "Redeemed $amount steps. New totals - Total: $currentTotal, Redeemed: $newRedeemed, Available: ${currentTotal - newRedeemed}"
-                )
-            }
-        }
-    }
-
-    // TODO: remove this (only for testing with emulator)
-    fun addSteps(amount: Int) {
-        serviceScope.launch {
-            stepMutex.withLock {
-                val currentTotal = totalSteps.value
-                val newTotal = currentTotal + amount
-
-                dataStore.edit { preferences ->
-                    preferences[totalStepsKey] = newTotal
-                }
-
-                Log.d("WalkUnlockService", "Added $amount steps. New total: $newTotal")
             }
         }
     }
@@ -250,9 +220,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
         createNotificationChannel()
         loadStoredSteps()
-
-        // TODO: remove debug logs
-        Log.d("WalkUnlockService", "Service created")
     }
 
     override fun onDestroy() {
@@ -260,9 +227,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
         stopStepCounting()
         serviceScope.launch { } // This should cancel all running coroutines
-
-        // TODO: remove debug logs
-        Log.d("WalkUnlockService", "Service destroyed")
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -293,8 +257,6 @@ class WalkUnlockService() : Service(), SensorEventListener {
     }
 
     fun forceShutdown() {
-        Log.d("WalkUnlockService", "Force shutdown requested")
-
         // Stop app lock manager if initialized
         if (::appLockManager.isInitialized) {
             appLockManager.stopMonitoring()
@@ -305,7 +267,5 @@ class WalkUnlockService() : Service(), SensorEventListener {
 
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
-
-        Log.d("WalkUnlockService", "Force shutdown completed")
     }
 }
