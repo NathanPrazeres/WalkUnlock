@@ -21,9 +21,9 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.nathanprazeres.walkunlock.MainActivity
 import com.nathanprazeres.walkunlock.R
-import com.nathanprazeres.walkunlock.utils.AppLockManager
-import com.nathanprazeres.walkunlock.utils.LockedAppManager
-import com.nathanprazeres.walkunlock.utils.StepCounterManager
+import com.nathanprazeres.walkunlock.managers.AppLockManager
+import com.nathanprazeres.walkunlock.managers.LockedAppManager
+import com.nathanprazeres.walkunlock.managers.StepCounterManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

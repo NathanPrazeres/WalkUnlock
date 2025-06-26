@@ -1,4 +1,4 @@
-package com.nathanprazeres.walkunlock.utils
+package com.nathanprazeres.walkunlock.managers
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,7 @@ import android.widget.Toast
 import com.nathanprazeres.walkunlock.models.AppUsageSession
 import com.nathanprazeres.walkunlock.models.LockedApp
 import com.nathanprazeres.walkunlock.services.ForegroundAppService
-import com.nathanprazeres.walkunlock.ui.AppBlockedActivity
+import com.nathanprazeres.walkunlock.AppBlockedActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

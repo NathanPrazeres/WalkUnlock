@@ -51,7 +51,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.nathanprazeres.walkunlock.utils.AppLauncher
-import com.nathanprazeres.walkunlock.utils.StepCounterManager
+import com.nathanprazeres.walkunlock.managers.StepCounterManager
+import com.nathanprazeres.walkunlock.utils.GetAppVersion
 import com.nathanprazeres.walkunlock.utils.ThemePreferences
 import kotlinx.coroutines.launch
 
@@ -237,7 +238,7 @@ fun SettingsScreen(
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${getAppVersion(context)}",
+                                text = "${GetAppVersion(context)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -373,22 +374,5 @@ fun SettingsScreen(
             containerColor = MaterialTheme.colorScheme.surface,
             textContentColor = MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-fun getAppVersion(
-    context: Context,
-): String? {
-    return try {
-        val packageManager = context.packageManager
-        val packageName = context.packageName
-        val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            packageManager.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(0))
-        } else {
-            packageManager.getPackageInfo(packageName, 0)
-        }
-        packageInfo.versionName
-    } catch (_: Exception) {
-        null
     }
 }

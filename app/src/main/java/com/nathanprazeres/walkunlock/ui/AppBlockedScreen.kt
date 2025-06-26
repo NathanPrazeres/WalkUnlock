@@ -1,11 +1,6 @@
 package com.nathanprazeres.walkunlock.ui
 
-import android.content.Intent
-import android.os.Build
-import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,41 +29,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.nathanprazeres.walkunlock.MainActivity
 import com.nathanprazeres.walkunlock.models.LockedApp
-import com.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
 import com.nathanprazeres.walkunlock.utils.vibrate
 
-
-class AppBlockedActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        var blockedApp: LockedApp?
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            blockedApp = intent.getParcelableExtra<LockedApp>("blocked_app", LockedApp::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            blockedApp = intent.getParcelableExtra<LockedApp>("blocked_app")
-        }
-
-        val availableSteps = intent.getIntExtra("available_steps", 0)
-
-        setContent {
-            WalkUnlockTheme {
-                AppBlockedScreen(
-                    blockedApp = blockedApp, availableSteps = availableSteps, onBackPressed = {
-                        val intent = Intent(baseContext, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        }
-
-                        baseContext.startActivity(intent)
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun AppBlockedScreen(

@@ -18,9 +18,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
 import com.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
-import com.nathanprazeres.walkunlock.utils.LockedAppManager
-import com.nathanprazeres.walkunlock.utils.StepCounterManager
-import android.R.style.Theme_Material_Dialog_Alert as DIALOG_ALERT_THEME
+import com.nathanprazeres.walkunlock.managers.LockedAppManager
+import com.nathanprazeres.walkunlock.managers.StepCounterManager
+import android.R.style.Theme_Material_Dialog_Alert as ALERT_DIALOG_THEME
 
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
             val deniedPermissions = permissions.filter { !it.value }.keys
             if (deniedPermissions.isEmpty()) return@registerForActivityResult
 
-            AlertDialog.Builder(this, DIALOG_ALERT_THEME)
+            AlertDialog.Builder(this, ALERT_DIALOG_THEME)
                 .setTitle("Required Permissions")
                 .setMessage(
                     "${applicationInfo.loadLabel(packageManager)} requires the following permissions in order to function correctly:\n\t- ${
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
     private fun checkAccessibilityPermission() {
         val appLockManager = stepCounterManager.getAppLockManager()
         if (appLockManager != null && !appLockManager.hasAccessibilityPermission()) {
-            AlertDialog.Builder(this, DIALOG_ALERT_THEME)
+            AlertDialog.Builder(this, ALERT_DIALOG_THEME)
                 .setTitle("Accessibility Permission Required")
                 .setMessage("${applicationInfo.loadLabel(packageManager)} needs accessibility permission to monitor app usage and enforce step requirements for locked apps.\n\nThis permission is necessary in order for this app to work.")
                 .setPositiveButton("Grant Permission") { _, _ ->
@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
             val powerManager = getSystemService(POWER_SERVICE) as PowerManager
 
             if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                AlertDialog.Builder(this, DIALOG_ALERT_THEME)
+                AlertDialog.Builder(this, ALERT_DIALOG_THEME)
                     .setTitle("Battery Optimization")
                     .setMessage("To ensure ${applicationInfo.loadLabel(packageManager)} works properly in the background, please disable battery optimization for this app.\n\nThis will:\n- Keep step counting accurate\n- Allow app blocking to work reliably")
                     .setPositiveButton("Continue") { _, _ ->

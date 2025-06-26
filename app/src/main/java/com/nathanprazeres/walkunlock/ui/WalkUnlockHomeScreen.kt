@@ -29,8 +29,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import com.nathanprazeres.walkunlock.utils.LockedAppManager
-import com.nathanprazeres.walkunlock.utils.StepCounterManager
+import com.nathanprazeres.walkunlock.managers.LockedAppManager
+import com.nathanprazeres.walkunlock.managers.StepCounterManager
 import kotlinx.coroutines.launch
 
 

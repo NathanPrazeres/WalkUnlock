@@ -1,4 +1,4 @@
-package com.nathanprazeres.walkunlock.utils
+package com.nathanprazeres.walkunlock.managers
 
 import android.content.ComponentName
 import android.content.Context
