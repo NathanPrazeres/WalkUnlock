@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import com.nathanprazeres.walkunlock.AppBlockedActivity
 import com.nathanprazeres.walkunlock.models.AppUsageSession
@@ -50,10 +49,11 @@ class AppLockManager(
         // Launch a job to monitor app changes
         foregroundAppJob = scope.launch {
             ForegroundAppService.currentForegroundApp.collect { packageName ->
+                val previousPackageName = currentForegroundApp.value ?: ""
                 currentForegroundApp.value = packageName
 
                 if (packageName != null && packageName != context.packageName) {
-                    handleAppChange(packageName)
+                    handleAppChange(packageName, previousPackageName)
                 } else {
                     // No app or our own app is foreground, stop tracking usage
                     stopUsageTracking()
@@ -62,7 +62,7 @@ class AppLockManager(
         }
     }
 
-    private suspend fun handleAppChange(packageName: String) {
+    private suspend fun handleAppChange(packageName: String, previousPackageName: String) {
         val lockedApps = lockedAppManager.lockedAppsFlow.firstOrNull() ?: emptyList()
         val lockedApp = lockedApps.find { it.packageName == packageName }
 
@@ -70,7 +70,7 @@ class AppLockManager(
             handleLockedAppUsage(lockedApp)
         } else {
             // Clean up session if app is no longer locked
-            usageSessions.remove(packageName)
+            usageSessions.remove(previousPackageName)
             stopUsageTracking()
         }
     }
