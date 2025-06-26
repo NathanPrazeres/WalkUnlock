@@ -7,10 +7,10 @@ import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import com.nathanprazeres.walkunlock.AppBlockedActivity
 import com.nathanprazeres.walkunlock.models.AppUsageSession
 import com.nathanprazeres.walkunlock.models.LockedApp
 import com.nathanprazeres.walkunlock.services.ForegroundAppService
-import com.nathanprazeres.walkunlock.AppBlockedActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

@@ -16,10 +16,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import com.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
-import com.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
 import com.nathanprazeres.walkunlock.managers.LockedAppManager
 import com.nathanprazeres.walkunlock.managers.StepCounterManager
+import com.nathanprazeres.walkunlock.ui.WalkUnlockHomeScreen
+import com.nathanprazeres.walkunlock.ui.theme.WalkUnlockTheme
 import android.R.style.Theme_Material_Dialog_Alert as ALERT_DIALOG_THEME
 
 

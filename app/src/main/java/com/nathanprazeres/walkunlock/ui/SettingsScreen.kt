@@ -1,8 +1,5 @@
 package com.nathanprazeres.walkunlock.ui
 
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -50,8 +47,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import com.nathanprazeres.walkunlock.utils.AppLauncher
 import com.nathanprazeres.walkunlock.managers.StepCounterManager
+import com.nathanprazeres.walkunlock.utils.AppLauncher
 import com.nathanprazeres.walkunlock.utils.GetAppVersion
 import com.nathanprazeres.walkunlock.utils.ThemePreferences
 import kotlinx.coroutines.launch
