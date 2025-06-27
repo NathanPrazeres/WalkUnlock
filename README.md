@@ -15,9 +15,15 @@ An app can be configured to not cost any steps although any app not on the list 
 Light and Dark theme are supported.
 
 ## Installation
+### Android
 
-Download the .apk file from the [GitHub Releases](https://github.com/NathanPrazeres/WalkUnlock/releases/tag/latest) tab and install it like any other Android application.
+Download the .apk file from the [GitHub Releases](https://github.com/NathanPrazeres/WalkUnlock/releases/latest) tab and install it like any other Android application.
 
+To enable the ```ForegroundAppService``` (which is required for seeing if a locked app is open), Accessibility permission is required. Since WalkUnlock is installed through an APK, the option will probably be greyed out.
+To enable the ability to grant the permission, please go to **Settings > Apps > WalkUnlock >** *3 dots menu* and tap **Allow restricted settings**.
+
+Go back to WalkUnlock and the pop-up asking for Accessibility Permission should show up again. Follow it as normal.
+ 
 ## Development
 
 This application was developed for the Mobile App Development 2024/25 Spring Semester course at AGH University in Kraków, Poland
