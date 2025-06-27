@@ -97,7 +97,7 @@ class WalkUnlockService() : Service(), SensorEventListener {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Step Balance: ${availableSteps.value}")
             .setContentText("Steps Taken: ${totalSteps.value}\nBalance Used: ${redeemedSteps.value}")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.app_notification_icon)
             .setContentIntent(pendingIntent)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setOngoing(true)
