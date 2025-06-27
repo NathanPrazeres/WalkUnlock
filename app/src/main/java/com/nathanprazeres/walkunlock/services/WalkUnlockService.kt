@@ -74,11 +74,7 @@ class WalkUnlockService() : Service(), SensorEventListener {
     // NOTIFICATION MANAGEMENT
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val importance = when {
-                Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU -> NotificationManager.IMPORTANCE_MIN
-                // NOTE: I'm not sure if this works on all versions below T but it works on my device
-                else -> NotificationManager.IMPORTANCE_UNSPECIFIED // Bad practice but I think it looks better
-            }
+            val importance = NotificationManager.IMPORTANCE_MIN
 
             val channel = NotificationChannel(
                 CHANNEL_ID,
