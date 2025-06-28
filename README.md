@@ -2,7 +2,7 @@
 
 ### Live a more active life
 
-Lots of people (me included) spend too long browsing social media and not enough time outside.
+Lots of people (myself included) spend too long browsing social media and not enough time outside.
 WalkUnlock aims to combat that by requireing a step "cost" to using applications.
 
 This is both an incentive to **walk more** and to spend **less time mindlessly scrolling** though social media.
